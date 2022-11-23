@@ -1,8 +1,126 @@
-html, body {
-  margin: 0;
-  padding: 0;
+/* Body */
+html,
+body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  position: relative;
+  font-family: "Fredoka One";
+  text-align: center;
+  color: blue;
+  background-color: rgb(184, 237, 229);
 }
 
+/* Canvas */
 canvas {
   display: block;
+  position: fixed;
+  top: 21%;
+  width: 90%;
+  border-radius: 5vw;
+  border-style: solid;
+  border-color: blue;
+}
+
+/* Divisors */
+.back {
+  bottom: 3%;
+  position: fixed;
+  background-color: rgb(251, 197, 255);
+  background-position: 2.5vw center;
+  background-repeat: no-repeat;
+  border: none;
+  border-radius: 2vw;
+  font-size: 3vw;
+}
+
+#color {
+  left: 14vw;
+  padding: 9.5vw 7.1vw;
+}
+
+#size {
+  left: 38vw;
+  padding: 9.5vw 8.2vw;
+}
+
+#shape {
+  left: 62vw;
+  padding: 9.5vw 6.5vw;
+}
+
+/* Sliders */
+.slider {
+  position: fixed;
+  bottom: 5%;
+  width: 15vw;
+}
+
+#colorSlider {
+  left: 17vw;
+}
+
+#sizeSlider {
+  left: 40vw;
+}
+
+#shapeSlider {
+  left: 65vw;
+}
+
+/* Buttons */
+.but {
+  position: fixed;
+  padding: 5.1vw;
+  background-color: rgb(245, 244, 176);
+  background-position: 1.5vw center;
+  background-repeat: no-repeat;
+  border: none;
+  border-radius: 2vw;
+}
+
+/* mode buttons */
+#fingerBut {
+  top: 12%;
+  right: 21vw;
+  background-image: url("./assets/hand.png");
+  background-color: transparent;
+}
+
+#noseBut {
+  top: 12%;
+  right: 12vw;
+  background-image: url("./assets/nose.png");
+  background-color: transparent;
+}
+
+#phoneBut {
+  top: 12%;
+  right: 3vw;
+  background-image: url("./assets/phone.png");
+  background-color: transparent;
+}
+
+/* other buttons */
+#musicBut {
+  bottom: 10%;
+  left: 2vw;
+  background-image: url("./assets/music.png");
+}
+
+#saveBut {
+  bottom: 3%;
+  left: 2vw;
+  background-image: url("./assets/save.png");
+}
+
+#eraseBut {
+  bottom: 10%;
+  right: 4vw;
+  background-image: url("./assets/erase.png");
+}
+
+#clearBut {
+  bottom: 3%;
+  right: 4vw;
+  background-image: url("./assets/clear.png");
 }

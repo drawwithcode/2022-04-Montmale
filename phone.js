@@ -1,10 +1,17 @@
-// Sketch linked to sketch.html
+// Sketch linked to phone.html
 let canvas;
 let fingerBut, noseBut, phoneBut, clearBut, saveBut, eraseBut, musicBut;
 let col, size, shape;
 let colorSlider, sizeSlider, shapeSlider;
 let playMusic;
 let on = false; //the eraser is initially "off"
+
+//coordinates of the shape
+let x = 150;
+let y = 150;
+//initial speed
+let velx = 0;
+let vely = 0;
 
 function preload() {
   eraseImg = loadImage("./assets/erase.png");
@@ -17,17 +24,15 @@ function preload() {
 
 function setup() {
   canvas = createCanvas(windowWidth * 0.95, windowHeight / 1.7);
-  background(255);
+  background("white");
 
-  //title & subtitle
   h1 = createElement("h1", "Let's draw!");
-  p = createP("Tap the screen");
+  p = createP("rotate the phone");
 
   //mode buttons
   fingerBut = createButton("");
   fingerBut.addClass("but");
   fingerBut.id("fingerBut");
-  fingerBut.style("background-color", "rgb(245, 244, 176)"); //current page mode
   fingerBut.touchStarted(touchOpen);
 
   noseBut = createButton("");
@@ -38,6 +43,7 @@ function setup() {
   phoneBut = createButton("");
   phoneBut.addClass("but");
   phoneBut.id("phoneBut");
+  phoneBut.style("background-color", "rgb(245, 244, 176)"); //current page mode
   phoneBut.touchStarted(phoneOpen);
 
   //other buttons
@@ -89,13 +95,33 @@ function setup() {
 }
 
 function draw() {
+  //the speed vector varies according to the rotation
+  vely = constrain(rotationX, -1.5, 1.5);
+  velx = constrain(rotationY, -1.5, 1.5);
+
+  //add the speed to the current position of the shape
+  x += velx;
+  y += vely;
+
+  // keep on screen
+  if (x > width) {
+    x = 0;
+  } else if (x < 0) {
+    x = width;
+  }
+  if (y > height) {
+    y = 0;
+  } else if (y < 0) {
+    y = height;
+  }
+
   //brush back
   fill(227);
   noStroke();
-  square(0, 0, width / 4, 15);
+  square(0, 0, width / 4, 20);
 
   //brush writing
-  fill("blue");
+  fill(0, 0, 255);
   textSize(width / 30);
   textFont("Fredoka One");
   text("Your brush", 10, 20);
@@ -113,9 +139,10 @@ function draw() {
   //shape slider
   shape = shapeSlider.value();
 
-  //reference brush
-  //it consists of a polygon with variable coordinates, radius and number of vertices > polygon(x, y, radius, npoints)
+  //the brush consists of a polygon with variable coordinates, radius and number of vertices > polygon(x, y, radius, npoints)
   polygon(40, 50, size, shape);
+
+  polygon(x, y, size, shape);
   pop();
 
   //music
@@ -141,7 +168,7 @@ function draw() {
 }
 
 function touchOpen() {
-  // Open in the same window the following url
+  // Open in the same window the following url:
   window.open("./sketch.html", "_self");
 }
 
@@ -199,18 +226,8 @@ function rubber() {
 function touchStarted() {
   for (let i = 0; i < touches.length; i++) {
     if (on) {
-      //erase
       fill(255);
-      //the polygon is located in the touch coordinates, its size and shape are defined by the sliders
       polygon(touches[i].x, touches[i].y, size, shape);
-    } else {
-      //draw by creating polygons
-      push();
-      colorMode(HSB);
-      fill(col, 100, 100, 1);
-      //the color is defined by the slider
-      polygon(touches[i].x, touches[i].y, size, shape);
-      pop();
     }
   }
 }
@@ -220,13 +237,17 @@ function touchMoved() {
     if (on) {
       fill(255);
       polygon(touches[i].x, touches[i].y, size, shape);
-    } else {
-      push();
-      colorMode(HSB);
-      fill(col, 100, 100, 1);
-      polygon(touches[i].x, touches[i].y, size, shape);
-      pop();
     }
+  }
+}
+
+// ask for permissions on iOS
+function touchEnded(event) {
+  // check that those functions exist
+  // if they exist it means we are
+  // on iOS and we can request the permissions
+  if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) {
+    DeviceOrientationEvent.requestPermission();
   }
 }
 

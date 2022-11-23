@@ -1,10 +1,13 @@
-// Sketch linked to sketch.html
+// Sketch linked to nose.html
 let canvas;
 let fingerBut, noseBut, phoneBut, clearBut, saveBut, eraseBut, musicBut;
 let col, size, shape;
 let colorSlider, sizeSlider, shapeSlider;
 let playMusic;
 let on = false; //the eraser is initially "off"
+let video;
+let poseNet;
+let pose;
 
 function preload() {
   eraseImg = loadImage("./assets/erase.png");
@@ -17,22 +20,33 @@ function preload() {
 
 function setup() {
   canvas = createCanvas(windowWidth * 0.95, windowHeight / 1.7);
-  background(255);
+  background("white");
 
-  //title & subtitle
+  //create a HTML5 <video> element that contains the video feed from a webcam
+  video = createCapture(VIDEO);
+  //hides the video
+  video.hide();
+
+  //create a new poseNet method with a single detection
+  poseNet = ml5.poseNet(video, modelReady);
+  //call the function gotPoses()
+  poseNet.on("pose", gotPoses);
+  //flip the video horizontally for ease of movement
+  poseNet.flipHorizontal = 1;
+
   h1 = createElement("h1", "Let's draw!");
-  p = createP("Tap the screen");
+  p = createP("Move your nose");
 
   //mode buttons
   fingerBut = createButton("");
   fingerBut.addClass("but");
   fingerBut.id("fingerBut");
-  fingerBut.style("background-color", "rgb(245, 244, 176)"); //current page mode
   fingerBut.touchStarted(touchOpen);
 
   noseBut = createButton("");
   noseBut.addClass("but");
   noseBut.id("noseBut");
+  noseBut.style("background-color", "rgb(245, 244, 176)"); //current page mode
   noseBut.touchStarted(noseOpen);
 
   phoneBut = createButton("");
@@ -79,7 +93,7 @@ function setup() {
   colorSlider.addClass("slider");
   colorSlider.id("colorSlider");
 
-  sizeSlider = createSlider(3, 27, 15, 3);
+  sizeSlider = createSlider(0.1, 0.7, 0.3, 0.1);
   sizeSlider.addClass("slider");
   sizeSlider.id("sizeSlider");
 
@@ -88,11 +102,22 @@ function setup() {
   shapeSlider.id("shapeSlider");
 }
 
+function modelReady() {
+  console.log("poseNet ready");
+}
+
+//take the position of the nose from time to time
+function gotPoses(poses) {
+  if (poses.length > 0) {
+    pose = poses[0].pose;
+  }
+}
+
 function draw() {
   //brush back
   fill(227);
   noStroke();
-  square(0, 0, width / 4, 15);
+  square(0, 0, width / 4, 20);
 
   //brush writing
   fill("blue");
@@ -102,20 +127,37 @@ function draw() {
 
   //Sliders to choose the brush
   push();
-  //color slider; use the HSB system
+  //color slider
   colorMode(HSB);
   col = colorSlider.value();
   fill(col, 100, 100, 1);
 
-  //size slider
+  //size slider; use the HSB system
   size = sizeSlider.value();
 
   //shape slider
   shape = shapeSlider.value();
 
-  //reference brush
-  //it consists of a polygon with variable coordinates, radius and number of vertices > polygon(x, y, radius, npoints)
-  polygon(40, 50, size, shape);
+  image(video, width - 120, 0, video.width / 5, video.height / 5);
+
+  if (pose) {
+    //get the co-ordinated of right and left eye
+    let eyeR = pose.rightEye;
+    let eyeL = pose.leftEye;
+    //calculate the distance between the eyes (if the person moves away, the nose is smaller)
+    let d = dist(eyeR.x, eyeR.y, eyeL.x, eyeL.y);
+    if (on) {
+      fill(255);
+      polygon(pose.nose.x, pose.nose.y, d * size * 0.2, shape);
+    } else {
+      fill(col, 100, 100, 1);
+      //the brush consists of a polygon with variable coordinates, radius and number of vertices > polygon(x, y, radius, npoints)
+      //the coordinates are those of the detected nose, the size depends on slider and the distance, the shape depends on slider
+      polygon(pose.nose.x, pose.nose.y, d * size * 0.2, shape);
+    }
+    //reference brush
+    polygon(40, 50, d * size * 0.2, shape);
+  }
   pop();
 
   //music
@@ -133,7 +175,7 @@ function draw() {
       text("press music button again to stop", 10, height - 50);
       textSize(16);
       text("or keep drawing XD", 10, height - 25);
-      if (touchMoved) {
+      if (gotPoses) {
         loop = 100;
       }
     }
@@ -141,7 +183,7 @@ function draw() {
 }
 
 function touchOpen() {
-  // Open in the same window the following url
+  // Open in the same window the following url:
   window.open("./sketch.html", "_self");
 }
 
@@ -195,46 +237,3 @@ function rubber() {
     eraseBut.style("background-color", "rgb(245, 244, 176)");
   }
 }
-
-function touchStarted() {
-  for (let i = 0; i < touches.length; i++) {
-    if (on) {
-      //erase
-      fill(255);
-      //the polygon is located in the touch coordinates, its size and shape are defined by the sliders
-      polygon(touches[i].x, touches[i].y, size, shape);
-    } else {
-      //draw by creating polygons
-      push();
-      colorMode(HSB);
-      fill(col, 100, 100, 1);
-      //the color is defined by the slider
-      polygon(touches[i].x, touches[i].y, size, shape);
-      pop();
-    }
-  }
-}
-
-function touchMoved() {
-  for (let i = 0; i < touches.length; i++) {
-    if (on) {
-      fill(255);
-      polygon(touches[i].x, touches[i].y, size, shape);
-    } else {
-      push();
-      colorMode(HSB);
-      fill(col, 100, 100, 1);
-      polygon(touches[i].x, touches[i].y, size, shape);
-      pop();
-    }
-  }
-}
-
-// do this prevent default touch interaction
-function mousePressed() {
-  return false;
-}
-
-document.addEventListener("gesturestart", function (e) {
-  e.preventDefault();
-});
